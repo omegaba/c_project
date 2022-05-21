@@ -431,16 +431,16 @@ int main(void)
     print_liste((&sum));
     printf("\n");
 
-    unbounded_int a_multi = string2unbounded_int("14");
-    unbounded_int b_multi = string2unbounded_int("257");
+    unbounded_int a_multi = string2unbounded_int("897");
+    unbounded_int b_multi = string2unbounded_int("897");
     unbounded_int a_fois_b = unbounded_int_produit(a_multi, b_multi);
     print_liste(&a_fois_b);
     printf("\n");
 
     printf("\n\n================TEST================\n\n");
 
-    unbounded_int a_positif = string2unbounded_int("316");
-    unbounded_int b_positif = string2unbounded_int("64");
+    unbounded_int a_positif = string2unbounded_int("897");
+    unbounded_int b_positif = string2unbounded_int("897");
 
     unbounded_int a_negatif = string2unbounded_int("-245");
     unbounded_int b_negatif = string2unbounded_int("-93");

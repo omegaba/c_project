@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 typedef struct chiffre
 {
     struct chiffre *suivant;
@@ -400,163 +401,153 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b)
     }
 }
 
-/*void test(FILE *f1, FILE *f2)
+char *catch_word(char *str, int *taille)
 {
-    //int alphabet[26];
-    char ligne[1024];
-    while (fgets(ligne, 1024, f1))
+    int i = 0;
+    size_t x = 0;
+    size_t len_string = strlen(str);
+    while (str[i] != ' ' && str[i] != '=')
     {
-        for (int i = 0; i < strlen(ligne); i++)
-        {
-            if (ligne[i] == '=')
-            {
-                char variable[1];
-                char nb1[1024];
-                char operation[1024];
-                char nb2[1024];
-                unbounded_int nbr1, nbr2;
-                sscanf(ligne, "%s%*s%s %s %s", variable, nb1, operation, nb2);
-
-                if (nb1 != NULL && operation != NULL && nb2 != NULL)
-                {
-
-                    nbr1 = string2unbounded_int(nb1);
-                    nbr2 = string2unbounded_int(nb2);
-                    unbounded_int res;
-                    switch (*operation)
-                    {
-                    case '*':
-                        res = unbounded_int_produit(nbr1, nbr2);
-                        break;
-                    case '+':
-                        res = unbounded_int_somme(nbr1, nbr2);
-                        break;
-                    case '-':
-                        res = unbounded_int_difference(nbr1, nbr2);
-                        break;
-                    }
-                    char *res2 = unbounded_int2string(res);
-                    fputs(res2, f2);
-                    fputs(" \n", f2);
-                }
-                if (operation == NULL && nb2 == NULL)
-                {
-                    printf("LF?EF");
-                    unbounded_int res;
-                    nbr1 = string2unbounded_int(nb1);
-                    char *res2 = unbounded_int2string(res);
-                    fputs(res2, f2);
-                }
-                break;
-            }
-            if(ligne[i]=='p' && ligne[i+1]=='r'){
-
-            }
-        }
+        x += 1;
+        i++;
     }
+    char *res = malloc(x + 1);
+    *taille = x;
+    memmove(res, str, x);
+    return res;
 }
 
-void test2(FILE *f, FILE *f2)
+unbounded_int test3(unbounded_int a, unbounded_int b)
 {
-    char ligne[1024];
-    while (fgets(ligne, 1024, f1))
-    {
-        char *token = strtok(str, separator);
-        if (strcmp(token, "print") == 0)
-        {
-            token = strtok(NULL, separator);
-            if (atoi(token))
-            {
-                unbounded_int nbr = string2unbounded_int(token);
-                char *res = unbounded_int2string(nbr);
-                fputs(res, f2);
-                break;
-            }
-        }
-        else
-        {
-            char tab[4];
-            int i = 0;
-            while (token != NULL)
-            {
-                tab[i] = *token;
-                i++;
-                token = strtok(NULL, separator);
-            }
-        }
-    }
+    unbounded_int res = unbounded_int_produit(a, b);
+    return res;
 }
-*/
+
 void test2(FILE *f1, FILE *f2)
 {
-    char alphabet[1024];
-    char ligne[1024];
-    while (fgets(ligne, 1024, f1))
+    char *alphabet[1024];
+    char *ligne = malloc(sizeof(char) * 1024);
+    while (!feof(f1))
     {
-        char separator[] = " =";
-        char *token = strtok(ligne, separator);
-        if (strcmp(token, "print") == 0)
+        fgets(ligne, 1024, f1);
+        size_t size_ligne = strlen(ligne);
+        char *tab[4];
+
+        for (int h = 0; h < 4; h++)
         {
-            token = strtok(NULL, separator);
-            /*if (atoi(token))
+            tab[h] = NULL;
+        }
+
+        int i = 0;
+        int j = 0;
+
+        while (i < size_ligne)
+        {
+            if (ligne[i] == ' ' || ligne[i] == '=')
             {
-                unbounded_int nbr = string2unbounded_int(token);
-                char *res = unbounded_int2string(nbr);
-                fputs(res, f2);
-                break;
+                i++;
             }
             else
-            {*/
-            if (alphabet[97 - (char)*token] != NULL)
             {
-                unbounded_int nbr = string2unbounded_int(alphabet[97 - (char)*token]);
-                char *res = unbounded_int2string(nbr);
-                fputs(res, f2);
+                int t = 0;
+
+                tab[j] = catch_word(ligne + i, &t);
+                i += t;
+                j++;
             }
-            //}
+        }
+        if (strcmp(tab[0], "print") == 0)
+        {
+            if (atoi(tab[1]))
+            {
+                unbounded_int nbr = string2unbounded_int(tab[1]);
+                char *res = unbounded_int2string(nbr);
+                fprintf(f2, "%s\n", res);
+            }
+            else
+            {
+                if (alphabet[*tab[1] - 97] != NULL)
+                {
+                    unbounded_int nbr = string2unbounded_int(alphabet[*tab[1] - 97]);
+                    char *res = unbounded_int2string(nbr);
+                    fprintf(f2, "%s\n", res);
+                }
+            }
         }
         else
         {
-            char tab[4];
-            int i = 0;
-            while (token != NULL)
+            if (tab[2] == NULL)
             {
-                tab[i] = *token;
-                i++;
-                token = strtok(NULL, separator);
+                alphabet[*tab[0] - 97] = tab[1];
             }
-            printf("%c\n", tab[0]);
-            printf("%c\n", tab[1]);
-            if (alphabet[97 - (char)tab[0]] != NULL)
+            else
             {
+                if (tab[1] != NULL && tab[3] != NULL)
+                {
 
-                if (tab[2] == 0)
-                {
-                    alphabet[97 - (char)tab[0]] = tab[1];
-                }
-                else
-                {
-                    if (alphabet[97 - (char)tab[1]] != NULL && alphabet[97 - (char)tab[3]] != NULL)
+                    if (atoi(tab[1]) && alphabet[*tab[3] - 97] != NULL)
                     {
-                        switch (tab[2])
+                        if (strcmp(tab[2], "+") == 0)
                         {
-                        case '+':
-                            alphabet[97 - (char)tab[0]] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(alphabet[97 - (char)tab[1]]), string2unbounded_int(alphabet[97 - (char)tab[3]])));
-                            break;
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(tab[1]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                        }
+                        else if (strcmp(tab[2], "-") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(tab[1]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                        }
+                        else if (strcmp(tab[2], "*") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(tab[1]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                        }
+                    }
 
-                        case '-':
-                            alphabet[97 - (char)tab[0]] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(alphabet[97 - (char)tab[1]]), string2unbounded_int(alphabet[97 - (char)tab[3]])));
-                            break;
-                        case '*':
-                            alphabet[97 - (char)tab[0]] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(alphabet[97 - (char)tab[1]]), string2unbounded_int(alphabet[97 - (char)tab[3]])));
-                            break;
+                    else if (alphabet[*tab[1] - 97] != NULL && atoi(tab[3]))
+                    {
+                        if (strcmp(tab[2], "-") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(tab[3]), string2unbounded_int(alphabet[*tab[1] - 97])));
+                        }
+                        else if (strcmp(tab[2], "+") == 0)
+                        {
+
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(tab[3]), string2unbounded_int(alphabet[*tab[1] - 97])));
+                        }
+                        else if (strcmp(tab[2], "*") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(tab[3]), string2unbounded_int(alphabet[*tab[1] - 97])));
+                        }
+                    }
+                    else if (atoi(tab[1]) && atoi(tab[3]))
+                    {
+                        if (strcmp(tab[2], "+") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(tab[3]), string2unbounded_int(tab[1])));
+                        }
+                        else if (strcmp(tab[2], "-") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(tab[3]), string2unbounded_int(tab[1])));
+                        }
+                        else if (strcmp(tab[2], "*") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(tab[3]), string2unbounded_int(tab[1])));
+                        }
+                    }
+                    else if (alphabet[*tab[1] - 97] != NULL && alphabet[*tab[3] - 97] != NULL)
+                    {
+                        if (strcmp(tab[2], "+") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(alphabet[*tab[1] - 97]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                        }
+                        if (strcmp(tab[2], "-") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(alphabet[*tab[1] - 97]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                        }
+                        if (strcmp(tab[2], "*") == 0)
+                        {
+                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(alphabet[*tab[1] - 97]), string2unbounded_int(alphabet[*tab[3] - 97])));
                         }
                     }
                 }
-            }
-            else
-            {
-                alphabet[97 - (char)tab[0]] = tab[1];
             }
         }
     }
@@ -564,37 +555,35 @@ void test2(FILE *f1, FILE *f2)
 
 int main(int argc, char **argv)
 {
-    FILE *f1 = fopen(argv[1], "r");
-    FILE *f2 = fopen(argv[2], "w");
-    if (f2 == NULL)
+    if (strcmp(argv[1], "-i") == 0 && strcmp(argv[3], "-o") == 0)
     {
-        FILE *f3 = fopen(argv[2], "w");
-        test2(f1, f3);
-    }
-    else
-    {
+        FILE *f1 = fopen(argv[2], "r");
+        FILE *f2 = fopen(argv[4], "w");
+        if (f1 == NULL)
+        {
+            fprintf(stderr, "%s\n", strerror(errno));
+            exit(1);
+        }
         test2(f1, f2);
+        fclose(f1);
+        fclose(f2);
     }
-    fclose(f1);
-    fclose(f2);*/
-    /* char str[] = "a = 19789797 + 675454";
-      char alphabet[26];
-     char tab[5];
-     const char *separator = " =";
-     char *token = strtok(str, separator);
-     int i = 0;
-     while (token != NULL)
-     {
-         printf("%c\n", *token);
-         tab[i] = *token;
-         i++;
-         token = strtok(NULL, separator);
-     }
+    else if (strcmp(argv[1], "-i") == 1 && strcmp(argv[3], "-o") == 0)
+    {
+        FILE *f2 = fopen(argv[4], "w");
+        test2(stdin, f2);
+        fclose(f2);
+    }
+    else if (strcmp(argv[1], "-i") == 0 && strcmp(argv[3], "-o") == 1)
+    {
+        FILE *f1 = fopen(argv[2], "r");
+        if (f1 == NULL)
+        {
+            fprintf(stderr, "%s\n", strerror(errno));
+            exit(1);
+        }
+        test2(f1, stdout);
+        fclose(f1);
+    }
 
-
-     alphabet[97-(char)tab[0]]=tab[2];
-     if (alphabet[97 - (char)tab[0]] != NULL){
-         printf("    aaaaaaaaa");
-     }
-     printf("%c\n",alphabet[97-(char)tab[0]]);*/
 }
