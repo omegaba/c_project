@@ -82,9 +82,6 @@ unbounded_int string2unbounded_int(const char *e)
         tmp = tmp->suivant;
         unbounded->dernier = tmp;
     }
-    // printf("%zu\n", unbounded->length);
-    // printf("%c\n", unbounded->premier->c);
-    // printf("%c\n", unbounded->dernier->c);
     return *unbounded;
 }
 
@@ -129,22 +126,15 @@ int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b)
     {
         return (&a)->length < (&b)->length ? -1 : 1;
     }
-    // int entier1 = atoi(unbounded_int2string(a));
-    // int entier2 = atoi(unbounded_int2string(b));
-    // return entier1 < entier2 ? -1 : entier1 == entier2 ? 0
-    //    : 1;
 }
 
 int unbounded_int_cmp_ll(unbounded_int a, long long b)
 {
-    // int entier = atoi(unbounded_int2string(a));
     int b_to_int = b;
     char *c = malloc(sizeof(char));
     sprintf(c, "%d", b_to_int);
     unbounded_int entier2 = string2unbounded_int(c);
     return unbounded_int_cmp_unbounded_int(a, entier2);
-    // return entier < b ? -1 : entier == b ? 0
-    //  : 1;
 }
 
 static unbounded_int unbounded_int_addition_nb_positif(unbounded_int a, unbounded_int b)
@@ -338,11 +328,6 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b)
 
 static unbounded_int unbounded_int_multiplication_nb_positif(unbounded_int a, unbounded_int b)
 {
-    print_liste(&a);
-    printf("\n");
-    print_liste(&b);
-    printf("\n");
-
     int m = (&b)->length;
     int n = (&a)->length;
     int r;
@@ -386,8 +371,6 @@ static unbounded_int unbounded_int_multiplication_nb_positif(unbounded_int a, un
         else
             break;
     }
-    printf("%s\n", s);
-
     return string2unbounded_int(s + nb_zero);
 }
 
