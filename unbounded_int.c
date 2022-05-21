@@ -338,6 +338,11 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b)
 
 static unbounded_int unbounded_int_multiplication_nb_positif(unbounded_int a, unbounded_int b)
 {
+    print_liste(&a);
+    printf("\n");
+    print_liste(&b);
+    printf("\n");
+
     int m = (&b)->length;
     int n = (&a)->length;
     int r;
@@ -381,21 +386,29 @@ static unbounded_int unbounded_int_multiplication_nb_positif(unbounded_int a, un
         else
             break;
     }
+    printf("%s\n", s);
 
     return string2unbounded_int(s + nb_zero);
 }
 
 unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b)
 {
+    unbounded_int res;
+    if ((&a)->length > (&b)->length)
+    {
+        res = unbounded_int_multiplication_nb_positif(a, b);
+    }
+    else
+    {
+        res = unbounded_int_multiplication_nb_positif(b, a);
+    }
     if (((&a)->signe == '-' && (&b)->signe == '+') || ((&a)->signe == '+' && (&b)->signe == '-'))
     {
-        unbounded_int res = unbounded_int_multiplication_nb_positif(a, b);
         (&res)->signe = '-';
         return res;
     }
     else
     {
-        unbounded_int res = unbounded_int_multiplication_nb_positif(a, b);
         (&res)->signe = '+';
         return res;
     }

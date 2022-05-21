@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 typedef struct chiffre
 {
     struct chiffre *suivant;
@@ -60,17 +61,23 @@ unbounded_int string2unbounded_int(const char *e)
     {
         unbounded->signe = '-';
         j++;
-        unbounded->length = len - 1;
+        while (e[j] == '0')
+            j++;
+        unbounded->length = len - j;
     }
     else if (e[j] == '+')
     {
         unbounded->signe = '+';
         j++;
-        unbounded->length = len - 1;
+        while (e[j] == '0')
+            j++;
+        unbounded->length = len - j;
     }
     else
     {
-        unbounded->length = len;
+        while (e[j] == '0')
+            j++;
+        unbounded->length = len - j;
         unbounded->signe = '+';
     }
     unbounded->premier = new_chiffre(e[j], NULL, NULL);
@@ -101,6 +108,8 @@ char *unbounded_int2string(unbounded_int i)
     chiffre *tmp = (&i)->premier;
     char *c = malloc(sizeof(char) * (&i)->length);
     int j = 0;
+    if ((&i)->signe == '-')
+        c[j++] = (&i)->signe;
     while (tmp != NULL)
     {
         c[j++] = tmp->c;
@@ -387,15 +396,22 @@ static unbounded_int unbounded_int_multiplication_nb_positif(unbounded_int a, un
 
 unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b)
 {
+    unbounded_int res;
+    if ((&a)->length > (&b)->length)
+    {
+        res = unbounded_int_multiplication_nb_positif(a, b);
+    }
+    else
+    {
+        res = unbounded_int_multiplication_nb_positif(b, a);
+    }
     if (((&a)->signe == '-' && (&b)->signe == '+') || ((&a)->signe == '+' && (&b)->signe == '-'))
     {
-        unbounded_int res = unbounded_int_multiplication_nb_positif(a, b);
         (&res)->signe = '-';
         return res;
     }
     else
     {
-        unbounded_int res = unbounded_int_multiplication_nb_positif(a, b);
         (&res)->signe = '+';
         return res;
     }
@@ -423,9 +439,86 @@ unbounded_int test3(unbounded_int a, unbounded_int b)
     return res;
 }
 
+typedef struct variable
+{
+    char *nom;
+    unbounded_int nombre;
+    struct variable *suivant;
+} variable;
+
+typedef struct list_nombre
+{
+    variable *premier;
+} list_nombre;
+
+variable *new_var(char *nom, unbounded_int nombre, variable *suivant)
+{
+    variable *v = malloc(sizeof(variable));
+    if (v == NULL)
+    {
+        abort();
+    }
+    v->nom = nom;
+    v->nombre = nombre;
+    v->suivant = suivant;
+    return v;
+}
+
+list_nombre *create_list()
+{
+    list_nombre *l = malloc(sizeof(list_nombre));
+    if (l == NULL)
+        abort();
+    l->premier = NULL;
+    return l;
+}
+
+variable *find_var(char *nom, list_nombre *l)
+{
+    variable *v = l->premier;
+    while (v != NULL)
+    {
+        if (strcmp(v->nom, nom) == 0)
+        {
+            return v;
+        }
+        v = v->suivant;
+    }
+    return NULL;
+}
+
+void print_variable(variable *v)
+{
+    printf("%s = %s\n", v->nom, unbounded_int2string(v->nombre));
+}
+
+void print_l(list_nombre *l)
+{
+    variable *v = l->premier;
+    while (v != NULL)
+    {
+        print_variable(v);
+        v = v->suivant;
+    }
+}
+
+char *supprimeEspace(char *str)
+{
+    char *fin;
+    while (isspace((unsigned char)*str))
+        str++;
+    if (*str == 0)
+        return str;
+    fin = str + strlen(str) - 1;
+    while (fin > str && isspace((unsigned char)*fin))
+        fin--;
+    fin[1] = '\0';
+    return str;
+}
+
 void test2(FILE *f1, FILE *f2)
 {
-    char *alphabet[1024];
+    list_nombre *liste_nombre = create_list();
     char *ligne = malloc(sizeof(char) * 1024);
     while (!feof(f1))
     {
@@ -456,20 +549,20 @@ void test2(FILE *f1, FILE *f2)
                 j++;
             }
         }
-        if (strcmp(tab[0], "print") == 0)
+        if (strcmp(supprimeEspace(tab[0]), "print") == 0)
         {
-            if (atoi(tab[1]))
+            if (atoi(supprimeEspace(tab[1])))
             {
-                unbounded_int nbr = string2unbounded_int(tab[1]);
+                unbounded_int nbr = string2unbounded_int(supprimeEspace(tab[1]));
                 char *res = unbounded_int2string(nbr);
                 fprintf(f2, "%s\n", res);
             }
             else
             {
-                if (alphabet[*tab[1] - 97] != NULL)
+                variable *v = find_var(supprimeEspace(tab[1]), liste_nombre);
+                if (v != NULL)
                 {
-                    unbounded_int nbr = string2unbounded_int(alphabet[*tab[1] - 97]);
-                    char *res = unbounded_int2string(nbr);
+                    char *res = unbounded_int2string(v->nombre);
                     fprintf(f2, "%s\n", res);
                 }
             }
@@ -478,73 +571,160 @@ void test2(FILE *f1, FILE *f2)
         {
             if (tab[2] == NULL)
             {
-                alphabet[*tab[0] - 97] = tab[1];
+                unbounded_int n = string2unbounded_int(supprimeEspace(tab[1]));
+                variable *v = new_var(supprimeEspace(tab[0]), n, liste_nombre->premier);
+                liste_nombre->premier = v;
             }
             else
             {
-                if (tab[1] != NULL && tab[3] != NULL)
+                if (supprimeEspace(tab[1]) != NULL && supprimeEspace(tab[3]) != NULL)
                 {
-
-                    if (atoi(tab[1]) && alphabet[*tab[3] - 97] != NULL)
+                    variable *tab0 = find_var(supprimeEspace(tab[0]), liste_nombre);
+                    variable *tab1 = find_var(supprimeEspace(tab[1]), liste_nombre);
+                    variable *tab3 = find_var(supprimeEspace(tab[3]), liste_nombre);
+                    if (atoi(supprimeEspace(tab[1])) && tab3 != NULL)
                     {
                         if (strcmp(tab[2], "+") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(tab[1]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                            unbounded_int res = unbounded_int_somme(string2unbounded_int(supprimeEspace(tab[1])), tab3->nombre);
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                         else if (strcmp(tab[2], "-") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(tab[1]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                            unbounded_int res = unbounded_int_difference(string2unbounded_int(supprimeEspace(tab[1])), tab3->nombre);
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                         else if (strcmp(tab[2], "*") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(tab[1]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                            unbounded_int res = unbounded_int_produit(string2unbounded_int(supprimeEspace(tab[1])), tab3->nombre);
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                     }
 
-                    else if (alphabet[*tab[1] - 97] != NULL && atoi(tab[3]))
-                    {
-                        if (strcmp(tab[2], "-") == 0)
-                        {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(tab[3]), string2unbounded_int(alphabet[*tab[1] - 97])));
-                        }
-                        else if (strcmp(tab[2], "+") == 0)
-                        {
-
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(tab[3]), string2unbounded_int(alphabet[*tab[1] - 97])));
-                        }
-                        else if (strcmp(tab[2], "*") == 0)
-                        {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(tab[3]), string2unbounded_int(alphabet[*tab[1] - 97])));
-                        }
-                    }
-                    else if (atoi(tab[1]) && atoi(tab[3]))
+                    else if (tab1 != NULL && atoi(supprimeEspace(tab[3])))
                     {
                         if (strcmp(tab[2], "+") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(tab[3]), string2unbounded_int(tab[1])));
+                            unbounded_int res = unbounded_int_somme(tab1->nombre, string2unbounded_int(supprimeEspace(tab[3])));
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                         else if (strcmp(tab[2], "-") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(tab[3]), string2unbounded_int(tab[1])));
+                            unbounded_int res = unbounded_int_difference(tab1->nombre, string2unbounded_int(supprimeEspace(tab[3])));
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                         else if (strcmp(tab[2], "*") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(tab[3]), string2unbounded_int(tab[1])));
+                            unbounded_int res = unbounded_int_produit(tab1->nombre, string2unbounded_int(supprimeEspace(tab[3])));
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                     }
-                    else if (alphabet[*tab[1] - 97] != NULL && alphabet[*tab[3] - 97] != NULL)
+                    else if (atoi(supprimeEspace(tab[1])) && atoi(supprimeEspace(tab[3])))
                     {
                         if (strcmp(tab[2], "+") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_somme(string2unbounded_int(alphabet[*tab[1] - 97]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                            unbounded_int res = unbounded_int_somme(string2unbounded_int(supprimeEspace(tab[1])), string2unbounded_int(supprimeEspace(tab[3])));
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
+                        }
+                        else if (strcmp(tab[2], "-") == 0)
+                        {
+                            unbounded_int res = unbounded_int_difference(string2unbounded_int(supprimeEspace(tab[1])), string2unbounded_int(supprimeEspace(tab[3])));
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
+                        }
+                        else if (strcmp(tab[2], "*") == 0)
+                        {
+                            unbounded_int res = unbounded_int_produit(string2unbounded_int(supprimeEspace(tab[1])), string2unbounded_int(supprimeEspace(tab[3])));
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
+                        }
+                    }
+                    else if (tab1 != NULL && tab3 != NULL)
+                    {
+                        if (strcmp(tab[2], "+") == 0)
+                        {
+                            unbounded_int res = unbounded_int_somme(tab1->nombre, tab3->nombre);
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                         if (strcmp(tab[2], "-") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_difference(string2unbounded_int(alphabet[*tab[1] - 97]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                            unbounded_int res = unbounded_int_difference(tab1->nombre, tab3->nombre);
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                         if (strcmp(tab[2], "*") == 0)
                         {
-                            alphabet[*tab[0] - 97] = unbounded_int2string(unbounded_int_produit(string2unbounded_int(alphabet[*tab[1] - 97]), string2unbounded_int(alphabet[*tab[3] - 97])));
+                            unbounded_int res = unbounded_int_produit(tab1->nombre, tab3->nombre);
+                            if (tab0 == NULL)
+                            {
+                                variable *v = new_var(supprimeEspace(tab[0]), res, liste_nombre->premier);
+                                liste_nombre->premier = v;
+                            }
+                            else
+                                tab0->nombre = res;
                         }
                     }
                 }
@@ -585,5 +765,4 @@ int main(int argc, char **argv)
         test2(f1, stdout);
         fclose(f1);
     }
-
 }
