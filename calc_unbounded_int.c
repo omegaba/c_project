@@ -51,21 +51,27 @@ static char *catch_word(char *str, int *taille)
 {
     size_t len = strlen(str);
     size_t x = 0;
+    // int i = 0;
+    // while (str[i] != ' ' && str[i] != '=')
+    // {
+    //     x += 1;
+    //     i++;
+    // }
     for (int i = 0; i < len; i++)
     {
         if (str[i] == '(' || str[i] == ')')
         {
-            printf("Il ne doit pas y avoir de parenthèse dans le fichier : varible %c\n", str[i]);
+            printf("Il ne doit pas y avoir de parenthèse dans le fichier : variable %c\n", str[i]);
             exit(1);
         }
         if (str[i] != ' ' && !atoi(str + i) && isOperationSign(str[i]) == 1 && isOperationSign(str[i + 1]) == 1)
         {
-            printf("L'opération est incorrecte : varible %c\n", str[i]);
+            printf("L'opération est incorrecte : variable %c\n", str[i]);
             exit(1);
         }
         if ((str[i] != ' ' && isOperationSign(str[i + 1]) == 1) || (isOperationSign(str[i]) == 1 && isalpha(str[i + 1])))
         {
-            printf("Les opérations doivent être entourées d'espaces : varible %c\n", str[i]);
+            printf("Les opérations doivent être entourées d'espaces : variable %c\n", str[i]);
             exit(1);
         }
         if (str[i] != ' ' && str[i] != '=')
