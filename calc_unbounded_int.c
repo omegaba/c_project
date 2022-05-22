@@ -144,7 +144,7 @@ static void interpreter(FILE *f1, FILE *f2)
 
         int i = 0;
         int j = 0;
-
+        int nbOperation= 0;
         while (i < size_ligne)
         {
             if (ligne[i] == ' ' || ligne[i] == '=')
@@ -154,11 +154,19 @@ static void interpreter(FILE *f1, FILE *f2)
             else
             {
                 int t = 0;
-
-                tab[j] = catch_word(ligne + i, &t);
+                char * word=catch_word(ligne + i, &t);
+                size_t word_len = strlen(word);
+                if (word_len==1 && isOperationSign(word[0])==1){
+                    nbOperation+=1;
+                }
+                tab[j] = word;
                 i += t;
                 j++;
             }
+        }
+        if(nbOperation>1){
+            printf("Une seule opération est possible par ligne\n");
+            exit(1);
         }
 
         if (strcmp(supprimeEspace(tab[0]), "print") == 0)
