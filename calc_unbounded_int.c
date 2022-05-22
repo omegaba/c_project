@@ -38,7 +38,6 @@ static char *catch_word(char *str, int *taille)
 {
     int i = 0;
     size_t x = 0;
-    size_t len_string = strlen(str);
     while (str[i] != ' ' && str[i] != '=')
     {
         x += 1;
@@ -73,7 +72,7 @@ static variable *find_var(char *nom, list_nombre *l)
     return NULL;
 }
 
-static void print_variable(variable *v)
+/*static void print_variable(variable *v)
 {
     printf("%s = %s\n", v->nom, unbounded_int2string(v->nombre));
 }
@@ -86,7 +85,7 @@ static void print_l(list_nombre *l)
         print_variable(v);
         v = v->suivant;
     }
-}
+}*/
 
 static char *supprimeEspace(char *str)
 {
@@ -334,13 +333,13 @@ int main(int argc, char **argv)
         fclose(f1);
         fclose(f2);
     }
-    else if (strcmp(argv[1], "-o") == 0 && argv[3]==NULL)
+    else if (strcmp(argv[1], "-o") == 0)
     {
         FILE *f2 = fopen(argv[2], "w");
         interpreter(stdin, f2);
         fclose(f2);
     }
-    else if (strcmp(argv[1], "-i") == 0 && argv[3]==NULL)
+    else if (strcmp(argv[1], "-i") == 0)
     {
         FILE *f1 = fopen(argv[2], "r");
         if (f1 == NULL)

@@ -3,23 +3,7 @@
 #include <string.h>
 #include "unbounded_int.h"
 
-static void print_chiffre(chiffre *ch)
-{
-    if (ch->suivant != NULL)
-    {
-        printf("%c", ch->c);
-        print_chiffre(ch->suivant);
-    }
-    else
-        printf("%c", ch->c);
-}
 
-static void print_liste(unbounded_int *nombre)
-{
-    if (nombre->signe == '-')
-        printf("-");
-    print_chiffre(nombre->premier);
-}
 
 static chiffre *new_chiffre(char e, chiffre *suivant, chiffre *precedent)
 {
