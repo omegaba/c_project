@@ -19,7 +19,7 @@ typedef struct list_nombre
     variable *premier;
 } list_nombre;
 
-variable *new_var(char *nom, unbounded_int nombre, variable *suivant)
+static variable *new_var(char *nom, unbounded_int nombre, variable *suivant)
 {
     variable *v = malloc(sizeof(variable));
     if (v == NULL)
@@ -33,15 +33,41 @@ variable *new_var(char *nom, unbounded_int nombre, variable *suivant)
 }
 
 
+static int isOperationSign(char  c){
+    switch(c){
+        case '+': return 1;
+        break;
+        case '-': return 1;
+        break;
+        case '*': return 1;
+        break;
+    }
+    return -1;
+}
 
 static char *catch_word(char *str, int *taille)
 {
-    int i = 0;
-    size_t x = 0;
-    while (str[i] != ' ' && str[i] != '=')
-    {
-        x += 1;
-        i++;
+    size_t len = strlen(str);
+    size_t x = 0;  
+    for (int i = 0; i<len ; i++){
+        if(str[i] == '(' || str[i]==')'){
+            printf("Il ne doit pas y avoir de parenthèse dans le fichier : varible %c\n", str[i]);
+            exit(1);
+        }
+        if ( str[i]!=' ' && !atoi(str+i) && isOperationSign(str[i])==1 && isOperationSign(str[i+1])==1){
+            printf("L'opération est incorrecte : varible %c\n", str[i]);
+            exit(1);
+        }
+        if ((str[i] != ' ' && isOperationSign(str[i+1])==1)  || (isOperationSign(str[i])==1 && isalpha(str[i+1]))) {
+            printf("Les opérations doivent être entourées d'espaces : varible %c\n", str[i]);
+            exit(1);
+        }
+        if (str[i] != ' ' && str[i] != '='){
+            x+=1;
+        }
+        else{
+            break;
+        }
     }
     char *res = malloc(x + 1);
     *taille = x;
@@ -134,6 +160,7 @@ static void interpreter(FILE *f1, FILE *f2)
                 j++;
             }
         }
+
         if (strcmp(supprimeEspace(tab[0]), "print") == 0)
         {
             if (atoi(supprimeEspace(tab[1])))
@@ -320,35 +347,33 @@ static void interpreter(FILE *f1, FILE *f2)
 
 int main(int argc, char **argv)
 {
-    if (strcmp(argv[1], "-i") == 0 && strcmp(argv[3], "-o") == 0)
-    {
-        FILE *f1 = fopen(argv[2], "r");
-        FILE *f2 = fopen(argv[4], "w");
-        if (f1 == NULL)
+  if(argc >5){
+      printf("Nombre d'arguments invalide\n");
+      exit(1);
+  }
+    FILE* f1;
+    FILE *f2;
+  if(argc>1 && strcmp(argv[1], "-i")==0){
+      f1 = fopen(argv[2], "r");
+      if (f1 == NULL)
         {
             fprintf(stderr, "%s\n", strerror(errno));
             exit(1);
         }
-        interpreter(f1, f2);
+        if(argc > 3 && strcmp(argv[3],"-o")==0){
+            f2=fopen(argv[4],"w");
+            interpreter(f1,f2);
+            fclose(f2);
+        }
+        else{
+            interpreter(f1, stdout);
+        }
         fclose(f1);
-        fclose(f2);
     }
-    else if (strcmp(argv[1], "-o") == 0)
-    {
-        FILE *f2 = fopen(argv[2], "w");
+    else if(argc > 1 && strcmp(argv[1], "-o")==0){
+        f2=fopen(argv[2],"w");
         interpreter(stdin, f2);
         fclose(f2);
-    }
-    else if (strcmp(argv[1], "-i") == 0)
-    {
-        FILE *f1 = fopen(argv[2], "r");
-        if (f1 == NULL)
-        {
-            fprintf(stderr, "%s\n", strerror(errno));
-            exit(1);
-        }
-        interpreter(f1, stdout);
-        fclose(f1);
     }
     else{
         interpreter(stdin, stdout);
