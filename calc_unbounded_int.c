@@ -18,23 +18,23 @@ typedef struct
     chiffre *dernier;
 } unbounded_int;
 
-static void print_chiffre(chiffre *ch)
-{
-    if (ch->suivant != NULL)
-    {
-        printf("%c", ch->c);
-        print_chiffre(ch->suivant);
-    }
-    else
-        printf("%c", ch->c);
-}
+// static void print_chiffre(chiffre *ch)
+// {
+//     if (ch->suivant != NULL)
+//     {
+//         printf("%c", ch->c);
+//         print_chiffre(ch->suivant);
+//     }
+//     else
+//         printf("%c", ch->c);
+// }
 
-static void print_liste(unbounded_int *nombre)
-{
-    if (nombre->signe == '-')
-        printf("-");
-    print_chiffre(nombre->premier);
-}
+// static void print_liste(unbounded_int *nombre)
+// {
+//     if (nombre->signe == '-')
+//         printf("-");
+//     print_chiffre(nombre->premier);
+// }
 
 static chiffre *new_chiffre(char e, chiffre *suivant, chiffre *precedent)
 {
@@ -182,8 +182,8 @@ static unbounded_int unbounded_int_addition_nb_positif(unbounded_int a, unbounde
         len++;
     }
 
-    char *s_reverse = malloc(sizeof(char));
     int length = strlen(s);
+    char *s_reverse = malloc(sizeof(char) * length + 1);
     int j = 0;
     for (int i = length - 1; i >= 0; i--)
     {
@@ -230,15 +230,14 @@ static unbounded_int unbounded_int_soustraction_nb_positif(unbounded_int a, unbo
         len++;
     }
 
-    char *s_reverse = malloc(sizeof(char));
     int length = strlen(s);
+    char *s_reverse = malloc(sizeof(char) * length + 1);
     int j = 0;
     for (int i = length - 1; i >= 0; i--)
     {
         s_reverse[j] = s[i];
         j++;
     }
-
     return string2unbounded_int(s_reverse);
 }
 
@@ -380,7 +379,6 @@ static unbounded_int unbounded_int_multiplication_nb_positif(unbounded_int a, un
         else
             break;
     }
-
     return string2unbounded_int(s + nb_zero);
 }
 
@@ -411,7 +409,7 @@ char *catch_word(char *str, int *taille)
 {
     int i = 0;
     size_t x = 0;
-    size_t len_string = strlen(str);
+    // size_t len_string = strlen(str);
     while (str[i] != ' ' && str[i] != '=')
     {
         x += 1;
