@@ -47,17 +47,23 @@ unbounded_int string2unbounded_int(const char *e)
     {
         unbounded->signe = '-';
         j++;
-        unbounded->length = len - 1;
+        while (e[j] == '0')
+            j++;
+        unbounded->length = len - j;
     }
     else if (e[j] == '+')
     {
         unbounded->signe = '+';
         j++;
-        unbounded->length = len - 1;
+        while (e[j] == '0')
+            j++;
+        unbounded->length = len - j;
     }
     else
     {
-        unbounded->length = len;
+        while (e[j] == '0')
+            j++;
+        unbounded->length = len - j;
         unbounded->signe = '+';
     }
     unbounded->premier = new_chiffre(e[j], NULL, NULL);
@@ -85,6 +91,8 @@ char *unbounded_int2string(unbounded_int i)
     chiffre *tmp = (&i)->premier;
     char *c = malloc(sizeof(char) * (&i)->length);
     int j = 0;
+    if ((&i)->signe == '-')
+        c[j++] = (&i)->signe;
     while (tmp != NULL)
     {
         c[j++] = tmp->c;
