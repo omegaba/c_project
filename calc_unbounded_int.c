@@ -102,7 +102,7 @@ static char *supprimeEspace(char *str)
     return str;
 }
 
-static void test2(FILE *f1, FILE *f2)
+static void interpreter(FILE *f1, FILE *f2)
 {
     list_nombre *liste_nombre = create_list();
     char *ligne = malloc(sizeof(char) * 1024);
@@ -330,14 +330,14 @@ int main(int argc, char **argv)
             fprintf(stderr, "%s\n", strerror(errno));
             exit(1);
         }
-        test2(f1, f2);
+        interpreter(f1, f2);
         fclose(f1);
         fclose(f2);
     }
     else if (strcmp(argv[1], "-o") == 0 && argv[3]==NULL)
     {
         FILE *f2 = fopen(argv[2], "w");
-        test2(stdin, f2);
+        interpreter(stdin, f2);
         fclose(f2);
     }
     else if (strcmp(argv[1], "-i") == 0 && argv[3]==NULL)
@@ -348,10 +348,10 @@ int main(int argc, char **argv)
             fprintf(stderr, "%s\n", strerror(errno));
             exit(1);
         }
-        test2(f1, stdout);
+        interpreter(f1, stdout);
         fclose(f1);
     }
     else{
-        test2(stdin, stdout);
+        interpreter(stdin, stdout);
     }
 }

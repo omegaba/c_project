@@ -12,5 +12,5 @@ clean :
 	rm -rf *~
 
 cleanall:
-	rm -rf *~ *o  calc_unbounded
+	rm -rf *~ *o  calc_unbounded unbounded_int
 
