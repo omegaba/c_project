@@ -3,7 +3,6 @@
 #include <string.h>
 #include "unbounded_int.h"
 
-
 static void print_chiffre(chiffre *ch)
 {
     if (ch->suivant != NULL)
@@ -168,8 +167,8 @@ static unbounded_int unbounded_int_addition_nb_positif(unbounded_int a, unbounde
         len++;
     }
 
-    char *s_reverse = malloc(sizeof(char));
     int length = strlen(s);
+    char *s_reverse = malloc(sizeof(char) * length + 1);
     int j = 0;
     for (int i = length - 1; i >= 0; i--)
     {
@@ -216,8 +215,8 @@ static unbounded_int unbounded_int_soustraction_nb_positif(unbounded_int a, unbo
         len++;
     }
 
-    char *s_reverse = malloc(sizeof(char));
     int length = strlen(s);
+    char *s_reverse = malloc(sizeof(char) * length + 1);
     int j = 0;
     for (int i = length - 1; i >= 0; i--)
     {
@@ -391,4 +390,3 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b)
         return res;
     }
 }
-
