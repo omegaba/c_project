@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include "unbounded_int.h"
 
-
-
 typedef struct variable
 {
     char *nom;
@@ -32,14 +30,18 @@ static variable *new_var(char *nom, unbounded_int nombre, variable *suivant)
     return v;
 }
 
-
-static int isOperationSign(char  c){
-    switch(c){
-        case '+': return 1;
+static int isOperationSign(char c)
+{
+    switch (c)
+    {
+    case '+':
+        return 1;
         break;
-        case '-': return 1;
+    case '-':
+        return 1;
         break;
-        case '*': return 1;
+    case '*':
+        return 1;
         break;
     }
     return -1;
@@ -48,24 +50,30 @@ static int isOperationSign(char  c){
 static char *catch_word(char *str, int *taille)
 {
     size_t len = strlen(str);
-    size_t x = 0;  
-    for (int i = 0; i<len ; i++){
-        if(str[i] == '(' || str[i]==')'){
+    size_t x = 0;
+    for (int i = 0; i < len; i++)
+    {
+        if (str[i] == '(' || str[i] == ')')
+        {
             printf("Il ne doit pas y avoir de parenthèse dans le fichier : varible %c\n", str[i]);
             exit(1);
         }
-        if ( str[i]!=' ' && !atoi(str+i) && isOperationSign(str[i])==1 && isOperationSign(str[i+1])==1){
+        if (str[i] != ' ' && !atoi(str + i) && isOperationSign(str[i]) == 1 && isOperationSign(str[i + 1]) == 1)
+        {
             printf("L'opération est incorrecte : varible %c\n", str[i]);
             exit(1);
         }
-        if ((str[i] != ' ' && isOperationSign(str[i+1])==1)  || (isOperationSign(str[i])==1 && isalpha(str[i+1]))) {
+        if ((str[i] != ' ' && isOperationSign(str[i + 1]) == 1) || (isOperationSign(str[i]) == 1 && isalpha(str[i + 1])))
+        {
             printf("Les opérations doivent être entourées d'espaces : varible %c\n", str[i]);
             exit(1);
         }
-        if (str[i] != ' ' && str[i] != '='){
-            x+=1;
+        if (str[i] != ' ' && str[i] != '=')
+        {
+            x += 1;
         }
-        else{
+        else
+        {
             break;
         }
     }
@@ -98,20 +106,20 @@ static variable *find_var(char *nom, list_nombre *l)
     return NULL;
 }
 
-/*static void print_variable(variable *v)
-{
-    printf("%s = %s\n", v->nom, unbounded_int2string(v->nombre));
-}
+// static void print_variable(variable *v)
+// {
+//     printf("%s = %s\n", v->nom, unbounded_int2string(v->nombre));
+// }
 
-static void print_l(list_nombre *l)
-{
-    variable *v = l->premier;
-    while (v != NULL)
-    {
-        print_variable(v);
-        v = v->suivant;
-    }
-}*/
+// static void print_l(list_nombre *l)
+// {
+//     variable *v = l->premier;
+//     while (v != NULL)
+//     {
+//         print_variable(v);
+//         v = v->suivant;
+//     }
+// }
 
 static char *supprimeEspace(char *str)
 {
@@ -131,9 +139,8 @@ static void interpreter(FILE *f1, FILE *f2)
 {
     list_nombre *liste_nombre = create_list();
     char *ligne = malloc(sizeof(char) * 1024);
-    while (!feof(f1))
+    while (fgets(ligne, 1024, f1) != NULL)
     {
-        fgets(ligne, 1024, f1);
         size_t size_ligne = strlen(ligne);
         char *tab[4];
 
@@ -144,7 +151,7 @@ static void interpreter(FILE *f1, FILE *f2)
 
         int i = 0;
         int j = 0;
-        int nbOperation= 0;
+        int nbOperation = 0;
         while (i < size_ligne)
         {
             if (ligne[i] == ' ' || ligne[i] == '=')
@@ -154,17 +161,19 @@ static void interpreter(FILE *f1, FILE *f2)
             else
             {
                 int t = 0;
-                char * word=catch_word(ligne + i, &t);
+                char *word = catch_word(ligne + i, &t);
                 size_t word_len = strlen(word);
-                if (word_len==1 && isOperationSign(word[0])==1){
-                    nbOperation+=1;
+                if (word_len == 1 && isOperationSign(word[0]) == 1)
+                {
+                    nbOperation += 1;
                 }
                 tab[j] = word;
                 i += t;
                 j++;
             }
         }
-        if(nbOperation>1){
+        if (nbOperation > 1)
+        {
             printf("Une seule opération est possible par ligne\n");
             exit(1);
         }
@@ -355,35 +364,41 @@ static void interpreter(FILE *f1, FILE *f2)
 
 int main(int argc, char **argv)
 {
-  if(argc >5){
-      printf("Nombre d'arguments invalide\n");
-      exit(1);
-  }
-    FILE* f1;
+    if (argc > 5)
+    {
+        printf("Nombre d'arguments invalide\n");
+        exit(1);
+    }
+    FILE *f1;
     FILE *f2;
-  if(argc>1 && strcmp(argv[1], "-i")==0){
-      f1 = fopen(argv[2], "r");
-      if (f1 == NULL)
+    if (argc > 1 && strcmp(argv[1], "-i") == 0)
+    {
+        f1 = fopen(argv[2], "r");
+        if (f1 == NULL)
         {
             fprintf(stderr, "%s\n", strerror(errno));
             exit(1);
         }
-        if(argc > 3 && strcmp(argv[3],"-o")==0){
-            f2=fopen(argv[4],"w");
-            interpreter(f1,f2);
+        if (argc > 3 && strcmp(argv[3], "-o") == 0)
+        {
+            f2 = fopen(argv[4], "w");
+            interpreter(f1, f2);
             fclose(f2);
         }
-        else{
+        else
+        {
             interpreter(f1, stdout);
         }
         fclose(f1);
     }
-    else if(argc > 1 && strcmp(argv[1], "-o")==0){
-        f2=fopen(argv[2],"w");
+    else if (argc > 1 && strcmp(argv[1], "-o") == 0)
+    {
+        f2 = fopen(argv[2], "w");
         interpreter(stdin, f2);
         fclose(f2);
     }
-    else{
+    else
+    {
         interpreter(stdin, stdout);
     }
 }
